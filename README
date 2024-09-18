@@ -1,0 +1,17 @@
+tmail
+
+Start your long job and forget it. When the job finishes,
+tmail will email you.
+
+
+USAGE
+
+1. Copy .tmail.conf into your $HOME and edit it. You know how.
+2. chmod +x tmail
+3. Copy tmail into somewhere in your $PATH.
+4. tmail COMMAND
+5. Count down 10s.
+6. If the job does not finish in 10s, then you can forget it
+   and do other things. You will receive an email once the
+   job finishes.
+

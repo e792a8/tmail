@@ -1,0 +1,56 @@
+#!/usr/bin/bash
+
+LC_ALL=C.UTF-8
+source ~/.tmail.conf
+
+time_thresh=10
+tail_lines=10
+subject="TMAIL: Job at $(date) finished with exit code %d"
+
+prepend_time() {
+	while IFS= read -r line; do printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$line"; done
+}
+
+send_mail() {
+	mail -:/ \
+		-Ssmtp-auth=login \
+		-Sfrom=${TMAIL_FROM} \
+		-Suser=${TMAIL_USER} \
+		-Spassword=${TMAIL_PASSWD} \
+		-Smta=${TMAIL_SERVER} \
+		-Sv15-compat \
+		-s "$1" \
+		-a "$2" \
+		-. ${TMAIL_TO}
+}
+
+cmdline="$@"
+runid=$RANDOM
+out_file=/tmp/tmail-out-$runid.txt
+start_date=$(date)
+start_time=$(date +%s)
+"$@" |& tee $out_file
+exit_code=$?
+stop_time=$(date +%s)
+stop_date=$(date)
+exec_time=$(($stop_time - $start_time))
+
+echo "TMAIL: Execution time is ${exec_time}s."
+
+if [[ $exec_time -le $time_thresh ]]; then
+	echo "TMAIL: Execution time does not exceed ${time_thresh}s. Not sending mail."
+else
+	echo "TMAIL: Sending mail."
+	send_mail "$(printf "$subject" $exit_code)" $out_file <<EOF
+Command line: ${cmdline}
+Start time: ${start_date}
+Finish time: ${stop_date}
+Execution time: $exec_time
+Exit code: $exit_code
+Full output file: $out_file
+Tail $tail_lines lines of output:
+
+$(tail -$tail_lines $out_file)
+EOF
+fi
+
