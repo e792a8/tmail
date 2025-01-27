@@ -12,16 +12,17 @@ prepend_time() {
 }
 
 send_mail() {
-	mail -:/ \
+	mailx \
 		-Ssmtp-auth=login \
 		-Sfrom=${TMAIL_FROM} \
 		-Suser=${TMAIL_USER} \
+		-Ssmtp-auth-user=${TMAIL_USER} \
 		-Spassword=${TMAIL_PASSWD} \
+		-Ssmtp-auth-password=${TMAIL_PASSWD} \
 		-Smta=${TMAIL_SERVER} \
-		-Sv15-compat \
 		-s "$1" \
 		-a "$2" \
-		-. ${TMAIL_TO}
+		${TMAIL_TO}
 }
 
 cmdline="$@"
